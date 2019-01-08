@@ -1,314 +1,283 @@
-# Licensed to the Apache Software Foundation (ASF) under one or more contributor
-# license agreements; and to You under the Apache License, Version 2.0.
-
-
-# This file defines the default values for all variables
-# used in the OpenWhisk Helm Chart.  The variables are grouped
-# by component into subtrees.
-#
-# You _MUST_ override the default values of whisk.ingress.apiHostName
-# and whisk.ingress.apiHostPort (see docs/ingress.md for a discussion
-# of how to determine values for these variables).
-#
-# Production deployments _MUST_ override the default credentials
-# that are used in whisk.auth and db.auth.
-#
-# The file docs/configurationChoices.md discusses other common
-# configuration options for OpenWhisk and which variables to override
-# to enable them.
-
-
-# Overall configuration of OpenWhisk deployment
 whisk:
-  # Ingress defines how to access OpenWhisk from outside the Kubernetes cluster.
-  # See docs/ingress.md for a discussion of how to provide these values.
   ingress:
-    name: "ow-ingress"
-    apiHostName: ""
+    name: ow-ingress
+    apiHostName: ''
     apiHostPort: 31001
-    apiHostProto: "https"
+    apiHostProto: https
     type: NodePort
-    annotations:
-    domain: "domain"
+    annotations: null
+    domain: domain
     tls:
       enabled: false
       secretenabled: false
       createsecret: false
-      secretname: "ow-ingress-tls-secret"
-      secrettype: "type"
-      crt: "crt"
-      key: "key"
-
-
-  # Production deployments _MUST_ override these default auth values
+      secretname: ow-ingress-tls-secret
+      secrettype: type
+      crt: crt
+      key: key
   auth:
-    system: "789c46b1-71f6-4ed5-8c54-816aa4f8c502:abczO3xZCLrMN6v2BKK1dXYFpXlPkccOFqm12CdAsMgRU4VrNZ9lyGVCGuMDGIwP"
-    guest: "23bc46b1-71f6-4ed5-8c54-816aa4f8c502:123zO3xZCLrMN6v2BKK1dXYFpXlPkccOFqm12CdAsMgRU4VrNZ9lyGVCGuMDGIwP"
-  systemNameSpace: "/whisk.system"
+    system: >-
+      789c46b1-71f6-4ed5-8c54-816aa4f8c502:abczO3xZCLrMN6v2BKK1dXYFpXlPkccOFqm12CdAsMgRU4VrNZ9lyGVCGuMDGIwP
+    guest: >-
+      23bc46b1-71f6-4ed5-8c54-816aa4f8c502:123zO3xZCLrMN6v2BKK1dXYFpXlPkccOFqm12CdAsMgRU4VrNZ9lyGVCGuMDGIwP
+  systemNameSpace: /whisk.system
+  limits:
+    actionsInvokesPerminute: 60
+    actionsInvokesConcurrent: 30
+    triggersFiresPerminute: 60
+    actionsSequenceMaxlength: 50
+    actions:
+      time:
+        min: 100ms
+        max: 5m
+        std: 1m
+      memory:
+        min: 128m
+        max: 512m
+        std: 256m
+      concurrency:
+        min: 1
+        max: 1
+        std: 1
+      log:
+        min: 0m
+        max: 10m
+        std: 10m
+    activation:
+      payload:
+        max: '1048576'
   loadbalancer:
-    blackboxFraction: "10%"
+    blackboxFraction: 10%
     timeoutFactor: 2
+  kafka:
+    replicationFactor: ''
+    topics:
+      cacheInvalidation:
+        segmentBytes: ''
+        retentionBytes: ''
+        retentionMs: ''
+      completed:
+        segmentBytes: ''
+        retentionBytes: ''
+        retentionMs: ''
+      events:
+        segmentBytes: ''
+        retentionBytes: ''
+        retentionMs: ''
+      health:
+        segmentBytes: ''
+        retentionBytes: ''
+        retentionMs: ''
+      invoker:
+        segmentBytes: ''
+        retentionBytes: ''
+        retentionMs: ''
   containerPool:
-    userMemory: "2048m"
-  runtimes: "runtimes.json"
+    userMemory: 2048m
+  runtimes: runtimes.json
+  testing:
+    includeSystemTests: false
   versions:
     openwhisk:
-      buildDate: "2018-11-13-21:33:13Z"
-      buildNo: "20181113a"
-      gitTag: "775b757ac7555c8371a5e03497622531984bf4f4"
+      buildDate: '2018-12-13-03:18:39Z'
+      buildNo: 20181213a
+      gitTag: 9f66633aa930547b0ea7caa36d4c46d935d6224d
     openwhiskCli:
-      tag: "2062905"
+      tag: a596544
     openwhiskCatalog:
-      gitTag: "3d6d69f3e2dba96c775d4b1a4d55b1fc158b1201"
+      gitTag: 3d6d69f3e2dba96c775d4b1a4d55b1fc158b1201
     openwhiskPackageAlarms:
-      gitTag: "d3598dd4279b2675953eb3cdd3665694d254ac05"
+      gitTag: 7693072f37d4ae215bf89bd721053b3cad341fec
     openwhiskPackageCloudant:
-      gitTag: "1c340b85d0b29a5d3f1fd0df487c4dd2f9a7349b"
+      gitTag: cc9f35151b7b471f74e7f032c1f3342168687ca2
     openwhiskPackageKafka:
-      gitTag: "e242c13d05a11c4d2df5968e13ba1e0f3ef95c72"
-
-# Properties of the Kubernetes cluster on which OpenWhisk is being deployed
+      gitTag: 6dbafc49107567185ee3a55781c8b3144fad6f63
 k8s:
   domain: cluster.local
   dns: kube-dns.kube-system
   persistence:
     enabled: true
-    useDynamicProvisioning: true
-    defaultStorageClass:               # intentionally left blank, which will result in using the default storageclass
-
-# Images used to run auxillary tasks/jobs
+    hasDefaultStorageClass: true
+    explicitStorageClass: nil
 utility:
-  ansibleRunner:
-    imageName: "openwhisk/ansible-runner"
-    imageTag: "775b757"
-    imagePullPolicy: "IfNotPresent"
-  scriptRunner:
-    imageName: "openwhisk/script-runner"
-    imageTag: "775b757"
-    imagePullPolicy: "IfNotPresent"
-
-# Docker registry
+  imageName: openwhisk/ow-utils
+  imageTag: 9f66633
+  imagePullPolicy: IfNotPresent
 docker:
   registry:
-    name: ""
-    username: ""
-    password: ""
-
-# zookeeper configurations
+    name: ''
+    username: ''
+    password: ''
+  timezone: UTC
 zookeeper:
   external: false
-  name: "zookeeper"
-  imageName: "zookeeper"
-  imageTag: "3.4"
-  imagePullPolicy: "IfNotPresent"
-  # Note: Zookeeper's quorum protocol is designed to have an odd number of replicas.
+  name: zookeeper
+  imageName: zookeeper
+  imageTag: '3.4'
+  imagePullPolicy: IfNotPresent
   replicaCount: 1
-  restartPolicy: "Always"
+  restartPolicy: Always
   port: 2181
   serverPort: 2888
   leaderElectionPort: 3888
   persistence:
     pvcName: zookeeper-pvc
     size: 256Mi
-  # Default values for entries in zoo.cfg (see Apache Zookeeper documentation for semantics)
   config:
     tickTime: 2000
     initLimit: 5
     syncLimit: 2
-    dataDir: "/data"
-    dataLogDir: "/datalog"
-
-# kafka configurations
+    dataDir: /data
+    dataLogDir: /datalog
 kafka:
   external: false
-  name: "kafka"
-  imageName: "wurstmeister/kafka"
-  imageTag: "0.11.0.1"
-  imagePullPolicy: "IfNotPresent"
-  # NOTE: setting replicaCount > 1 will not work...actively being worked on.
+  name: kafka
+  imageName: wurstmeister/kafka
+  imageTag: 0.11.0.1
+  imagePullPolicy: IfNotPresent
   replicaCount: 1
-  restartPolicy: "Always"
+  restartPolicy: Always
   port: 9092
   persistence:
     pvcName: kafka-pvc
     size: 512Mi
-
-# Database configuration
 db:
   external: false
-  # Should we run a Job to wipe and re-initialize the database when the chart is deployed?
-  # This should always be true if external is false.
   wipeAndInit: true
-  name: "couchdb"
-  imageName: "apache/couchdb"
-  imageTag: "2.1"
-  imagePullPolicy: "IfNotPresent"
-  # NOTE: must be 1 (because initdb.sh enables single node mode)
+  name: couchdb
+  imageName: apache/couchdb
+  imageTag: '2.1'
+  imagePullPolicy: IfNotPresent
   replicaCount: 1
-  restartPolicy: "Always"
+  restartPolicy: Always
   host: nil
   port: 5984
-  provider: "CouchDB"
-  protocol: "http"
-  # Production deployments _MUST_ override the default user/password values
+  provider: CouchDB
+  protocol: http
   auth:
-    username: "whisk_admin"
-    password: "some_passw0rd"
-  dbPrefix: "test_"
-  activationsTable: "test_activations"
-  actionsTable: "test_whisks"
-  authsTable: "test_subjects"
+    username: whisk_admin
+    password: some_passw0rd
+  dbPrefix: test_
+  activationsTable: test_activations
+  actionsTable: test_whisks
+  authsTable: test_subjects
   persistence:
     pvcName: couchdb-pvc
     size: 2Gi
-
-# Nginx configurations
 nginx:
-  name: "nginx"
-  imageName: "nginx"
-  imageTag: "1.11"
-  imagePullPolicy: "IfNotPresent"
-  # NOTE: setting replicaCount > 1 is not tested and may not work
+  name: nginx
+  imageName: nginx
+  imageTag: '1.13'
+  imagePullPolicy: IfNotPresent
   replicaCount: 1
-  restartPolicy: "Always"
+  restartPolicy: Always
   httpPort: 80
   httpsPort: 443
-  httpsAdminPort: 8443
   httpsNodePort: 31001
-
-# Controller configurations
 controller:
-  name: "controller"
-  imageName: "openwhisk/controller"
-  imageTag: "775b757"
-  imagePullPolicy: "IfNotPresent"
+  name: controller
+  imageName: openwhisk/controller
+  imageTag: 9f66633
+  imagePullPolicy: IfNotPresent
   replicaCount: 1
-  restartPolicy: "Always"
+  restartPolicy: Always
   port: 8080
-  options: ""
-  jvmHeapMB: "1024"
-  jvmOptions: ""
-  limits:
-    actionsSequenceMaxlength: 50
-    triggersFiresPerminute: 60
-    actionsInvokesPerminute: 60
-    actionsInvokesConcurrent: 30
-
-# Invoker configurations
+  options: ''
+  jvmHeapMB: '1024'
+  jvmOptions: ''
 invoker:
-  name: "invoker"
-  imageName: "openwhisk/invoker"
-  imageTag: "775b757"
-  imagePullPolicy: "IfNotPresent"
-  restartPolicy: "Always"
+  name: invoker
+  imageName: openwhisk/invoker
+  imageTag: 9f66633
+  imagePullPolicy: IfNotPresent
+  restartPolicy: Always
   port: 8080
-  options: ""
-  jvmHeapMB: "512"
-  jvmOptions: ""
+  options: ''
+  jvmHeapMB: '512'
+  jvmOptions: ''
   containerFactory:
     dind: false
     useRunc: false
-    impl: "kubernetes"
+    impl: kubernetes
     kubernetes:
       replicaCount: 1
       agent:
-        name: "invoker-agent"
-        imageName: "openwhisk/kube-invoker-agent"
-        imageTag: "fa67042"
-        imagePullPolicy: "IfNotPresent"
+        name: invoker-agent
+        imageName: openwhisk/kube-invoker-agent
+        imageTag: eb92751
+        imagePullPolicy: IfNotPresent
         enabled: false
         port: 3233
-  containerNetwork: "bridge"
-  kubeDNS: nil
-
-# API Gateway configurations
+    containerNetwork: bridge
+    nameservers: ''
 apigw:
-  name: "apigateway"
-  imageName: "openwhisk/apigateway"
-  imageTag: "a996221"
-  imagePullPolicy: "IfNotPresent"
-  # NOTE: setting replicaCount > 1 is not tested and may not work
+  name: apigateway
+  imageName: openwhisk/apigateway
+  imageTag: bed6e65
+  imagePullPolicy: IfNotPresent
   replicaCount: 1
-  restartPolicy: "Always"
+  restartPolicy: Always
   apiPort: 9000
   mgmtPort: 8080
-
-# Redis (used by apigateway)
 redis:
-  name: "redis"
-  imageName: "redis"
-  imageTag: "4.0"
-  imagePullPolicy: "IfNotPresent"
-  # NOTE: setting replicaCount > 1 will not work; need to add redis cluster configuration
+  name: redis
+  imageName: redis
+  imageTag: '4.0'
+  imagePullPolicy: IfNotPresent
   replicaCount: 1
-  restartPolicy: "Always"
+  restartPolicy: Always
   port: 6379
   persistence:
     pvcName: redis-pvc
     size: 256Mi
-
-# Configuration of OpenWhisk event providers
 providers:
-  # CouchDB instance used by all enabled providers to store event/configuration data.
   db:
     external: false
-    # Define the rest of these values if you are using external couchdb instance
-    host: "10.10.10.10"
+    host: 10.10.10.10
     port: 5984
-    protocol: "http"
-    username: "admin"
-    password: "secret"
-  # Alarm provider configurations
+    protocol: http
+    username: admin
+    password: secret
   alarm:
-    enabled: true
-    name: "alarmprovider"
-    imageName: "openwhisk/alarmprovider"
-    imageTag: "1.10.2"
-    imagePullPolicy: "IfNotPresent"
-    # NOTE: replicaCount > 1 doesn't work because of the PVC
+    enabled: false
+    name: alarmprovider
+    imageName: openwhisk/alarmprovider
+    imageTag: 1.12.0
+    imagePullPolicy: IfNotPresent
     replicaCount: 1
-    restartPolicy: "Always"
+    restartPolicy: Always
     apiPort: 8080
-    dbPrefix: "alm"
+    dbPrefix: alm
     persistence:
       pvcName: alarmprovider-pvc
       size: 1Gi
-  # Kafka provider configurations
   kafka:
-    enabled: true
-    name: "kafkaprovider"
-    imageName: "openwhisk/kafkaprovider"
-    imageTag: "1.4.18"
-    imagePullPolicy: "IfNotPresent"
-    # NOTE: setting replicaCount > 1 has not been tested and may not work
+    enabled: false
+    name: kafkaprovider
+    imageName: openwhisk/kafkaprovider
+    imageTag: 1.4.18
+    imagePullPolicy: IfNotPresent
     replicaCount: 1
-    restartPolicy: "Always"
+    restartPolicy: Always
     apiPort: 8080
-    dbPrefix: "kp"
-  # Cloudant provider configurations
+    dbPrefix: kp
   cloudant:
-    enabled: true
-    name: "cloudantprovider"
-    imageName: "openwhisk/cloudantprovider"
-    imageTag: "1.7.1"
-    imagePullPolicy: "IfNotPresent"
-    # NOTE: replicaCount > 1 doesn't work because of the PVC
+    enabled: false
+    name: cloudantprovider
+    imageName: openwhisk/cloudantprovider
+    imageTag: 1.9.0
+    imagePullPolicy: IfNotPresent
     replicaCount: 1
-    restartPolicy: "Always"
+    restartPolicy: Always
     apiPort: 8080
-    dbPrefix: "cldt"
+    dbPrefix: cldt
     persistence:
       pvcName: cloudntprovider-pvc
       size: 1Gi
-
-
-# Used to define pod affinity and anti-affinity for the Kubernetes scheduler.
-# If affinity.enabled is true, then all of the deployments for the OpenWhisk
-# microservices will use node and pod affinity directives to inform the
-# scheduler how to best distribute the pods on the available nodes in the cluster.
 affinity:
   enabled: true
   coreNodeLabel: core
   edgeNodeLabel: edge
   invokerNodeLabel: invoker
   providerNodeLabel: provider
+

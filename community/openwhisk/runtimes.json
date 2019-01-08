@@ -7,7 +7,7 @@
                 "image": {
                     "prefix": "openwhisk",
                     "name": "nodejs6action",
-                    "tag": "d967ebe"
+                    "tag": "92503cb"
                 },
                 "deprecated": false,
                 "attached": {
@@ -27,7 +27,7 @@
                 "image": {
                     "prefix": "openwhisk",
                     "name": "action-nodejs-v8",
-                    "tag": "d967ebe"
+                    "tag": "92503cb"
                 },
                 "deprecated": false,
                 "attached": {
@@ -41,7 +41,7 @@
                 "image": {
                     "prefix": "openwhisk",
                     "name": "action-nodejs-v10",
-                    "tag": "586f84e"
+                    "tag": "92503cb"
                 },
                 "deprecated": false,
                 "attached": {
@@ -146,7 +146,7 @@
                 "image": {
                     "prefix": "openwhisk",
                     "name": "action-php-v7.1",
-                    "tag": "ab65b67"
+                    "tag": "0d082e2"
                 },
                 "attached": {
                     "attachmentName": "codefile",
@@ -155,12 +155,26 @@
             },
             {
                 "kind": "php:7.2",
-                "default": true,
+                "default": false,
                 "deprecated": false,
                 "image": {
                     "prefix": "openwhisk",
                     "name": "action-php-v7.2",
-                    "tag": "ab65b67"
+                    "tag": "0d082e2"
+                },
+                "attached": {
+                    "attachmentName": "codefile",
+                    "attachmentType": "text/plain"
+                }
+            },
+            {
+                "kind": "php:7.3",
+                "default": true,
+                "deprecated": false,
+                "image": {
+                    "prefix": "openwhisk",
+                    "name": "action-php-v7.3",
+                    "tag": "0d082e2"
                 },
                 "attached": {
                     "attachmentName": "codefile",
@@ -196,7 +210,24 @@
                 "image": {
                     "prefix": "openwhisk",
                     "name": "actionloop-golang-v1.11",
-                    "tag": "e7fb79c"
+                    "tag": "a62a3d0"
+                }
+            }
+        ],
+        "dotnet": [
+            {
+                "kind": "dotnet:2.2",
+                "default": true,
+                "deprecated": false,
+                "requireMain": true,
+                "image": {
+                    "prefix": "openwhisk",
+                    "name": "action-dotnet-v2.2",
+                    "tag": "52eac6c"
+                },
+                "attached": {
+                    "attachmentName": "codefile",
+                    "attachmentType": "text/plain"
                 }
             }
         ]

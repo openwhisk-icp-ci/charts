@@ -79,19 +79,22 @@ spec:
               configMapKeyRef:
                 name: whisk.config
                 key: whisk_api_host_name
-          - name: "INVOKER_CONTAINER_NETWORK"
-            value: {{ .Values.invoker.containerNetwork | quote }}
+
           - name: "CONFIG_whisk_docker_containerFactory_useRunc"
             value: {{ .Values.invoker.containerFactory.useRunc | quote }}
 
           - name: "CONFIG_whisk_containerPool_userMemory"
             value: {{ .Values.whisk.containerPool.userMemory | quote }}
 
-          # DNS Server passed to action containers
-{{- if not (eq .Values.invoker.kubeDNS "nil") }}
-          - name: "CONFIG_whisk_containerFactory_containerArgs_dnsServers_0"
-            value: {{ .Values.invoker.kubeDNS }}
-{{ end }}
+{{- if ne .Values.invoker.containerFactory.nameservers "" }}
+          # DNS Server(s) to be used by action containers
+  {{- range $index, $element := splitList ":" .Values.invoker.containerFactory.nameservers }}
+          - name: "CONFIG_whisk_containerFactory_containerArgs_dnsServers_{{ $index }}"
+            value: {{ $element | quote }}
+  {{- end }}
+{{- end }}
+          - name: "CONFIG_whisk_docker_containerFactory_containerArgs_network"
+            value: {{ .Values.invoker.containerFactory.containerNetwork | quote }}
 
           # Invoker name is the name of the node (DaemonSet) or pod (StatefulSet)
           - name: "INVOKER_NAME"
@@ -118,6 +121,9 @@ spec:
           - name: "RUNTIMES_MANIFEST"
             value: {{ template "openwhisk.runtimes_manifest" . }}
 
+          # Action limits
+{{ include "openwhisk.limitsEnvVars" . | indent 10 }}
+
           # Default to empty logs dir. This is because logs should go to stdout
           - name: "WHISK_LOGS_DIR"
             value: ""
@@ -135,6 +141,7 @@ spec:
           # properties for kafka connection
           - name: "KAFKA_HOSTS"
             value: "{{ include "openwhisk.kafka_host" . }}:{{ .Values.kafka.port }}"
+{{ include "openwhisk.kafkaConfigEnvVars" . | indent 10 }}
 
           # properties for zookeeper connection
           - name: "ZOOKEEPER_HOSTS"
